@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vin Library Agent Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">VINUNI AI COURSE</p>
+          <h1>Library Agent Demo</h1>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="panel form-panel">
+          <h2>Hỏi trợ lý thư viện</h2>
+
+          <form method="post">
+            <label for="query">Câu hỏi</label>
+            <textarea id="query" name="query" rows="4" placeholder="Ví dụ: Tìm vị trí của cuốn sách BK1001 và cho biết tình trạng hiện tại.">{{ query }}</textarea>
+
+            <div class="actions">
+              <button type="submit">Gửi</button>
+            </div>
+          </form>
+
+          <div class="sample-queries">
+            <h3>Ví dụ nhanh</h3>
+            <div class="chips">
+              {% for sample in sample_queries %}
+                <button type="button" class="chip" data-query="{{ sample }}">{{ sample }}</button>
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+
+        <section class="panel result-panel">
+          <h2>Kết quả</h2>
+
+          {% if answer %}
+            <div class="answer-box">
+              <strong>Phản hồi cuối cùng</strong>
+              <p>{{ answer }}</p>
+            </div>
+          {% else %}
+            <div class="empty-state">
+              <p>Chưa có kết quả. Hãy thử một câu hỏi mẫu hoặc nhập câu hỏi của bạn.</p>
+            </div>
+          {% endif %}
+
+          {% if logs %}
+            <div class="trace-block">
+              <h3>Waterfall trace</h3>
+              <div class="trace-list">
+                {% for log in logs %}
+                  <div class="trace-item">
+                    <div class="trace-meta">
+                      <span class="step-label">Step {{ log.step }}</span>
+                      <span class="type-pill">{{ log.action_type }}</span>
+                    </div>
+
+                    {% if log.tool_name %}
+                      <p><strong>Tool:</strong> {{ log.tool_name }}</p>
+                    {% endif %}
+
+                    {% if log.arguments %}
+                      <p><strong>Arguments:</strong> {{ log.arguments }}</p>
+                    {% endif %}
+
+                    {% if log.thought %}
+                      <p><strong>Thought:</strong> {{ log.thought }}</p>
+                    {% endif %}
+
+                    {% if log.output %}
+                      <p><strong>Output:</strong> {{ log.output }}</p>
+                    {% endif %}
+
+                    {% if log.observation %}
+                      <p><strong>Observation:</strong> {{ log.observation }}</p>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        </section>
+      </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>

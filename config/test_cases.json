@@ -1,0 +1,37 @@
+[
+  {
+    "id": "TC01",
+    "type": "direct_query",
+    "question": "Bạn có thể giải thích quy định mượn sách tối đa bao nhiêu ngày không?",
+    "expected_behavior": "Chatbot trả lời trực tiếp từ System Prompt, không cần gọi bất kỳ Tool nào.",
+    "complexity": "Low"
+  },
+  {
+    "id": "TC02",
+    "type": "single_tool_query",
+    "question": "Tìm vị trí của cuốn sách Python Căn Bản và cho biết tình trạng hiện tại.",
+    "expected_behavior": "Agent nhận diện nhu cầu tra cứu sách, tự động phát sinh Tool Call 'lookup_book' với query 'BK1001'.",
+    "complexity": "Medium"
+  },
+  {
+    "id": "TC03",
+    "type": "borrow_book",
+    "question": "Tôi muốn mượn sách Thiết Kế CSDL bằng thẻ thành viên MEM001.",
+    "expected_behavior": "Agent tự động phát sinh Tool Call 'borrow_book' với book_id 'BK1002' và member_id 'MEM001'.",
+    "complexity": "Medium"
+  },
+  {
+    "id": "TC04",
+    "type": "multi_step_reasoning",
+    "question": "Cho tôi biết vị trí của sách BK1001, rồi nếu sách đang được mượn thì gia hạn cho thành viên MEM001 thêm 7 ngày.",
+    "expected_behavior": "Agent thực hiện chuỗi suy luận ReAct: tra cứu sách trước, sau đó gọi Tool 'renew_book' nếu cần thiết.",
+    "complexity": "High"
+  },
+  {
+    "id": "TC05",
+    "type": "edge_case_handling",
+    "question": "Tìm thông tin sách BK9999.",
+    "expected_behavior": "Agent nhận kết quả NOT_FOUND từ Tool và trả lời rõ ràng rằng sách không tồn tại trong mock database.",
+    "complexity": "Medium"
+  }
+]

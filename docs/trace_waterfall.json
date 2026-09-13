@@ -1,29 +1,156 @@
 [
   {
     "step": 1,
-    "query": "Chào bạn, bạn có thể giới thiệu quy chế học vụ cơ bản của Đại học VinUni không?",
+    "query": "Bạn có thể giải thích quy định mượn sách tối đa bao nhiêu ngày không?",
     "action_type": "FINAL_ANSWER",
-    "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool.",
-    "output": "[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-    "latency_ms": 2845.93
+    "thought": "Gemini phản hồi trực tiếp bằng văn bản (không cần gọi công cụ).",
+    "output": "Tại Thư viện VinUni, quy định về thời hạn mượn sách tối đa phụ thuộc vào **nhóm đối tượng người dùng** và **loại tài liệu**:\n\n1. **Sinh viên đại học (Undergraduate Students):**\n   * **Thời hạn mượn:** Thường là **14 ngày** (2 tuần) cho mỗi lần mượn tài liệu thuộc bộ sưu tập thông thường.\n   * **Gia hạn:** Có thể gia hạn (mỗi lần gia hạn thêm **7 ngày** nếu sách không có người khác đặt trước).\n\n2. **Học viên cao học / Nghiên cứu sinh (Graduate / PhD Students):**\n   * **Thời hạn mượn:** Thường từ **14 đến 30 ngày** tùy thuộc vào chính sách cụ thể của từng bộ sưu tập.\n\n3. **Giảng viên và Nghiên cứu viên (Faculty & Researchers):**\n   * **Thời hạn mượn:** Thường được ưu đãi thời hạn dài hơn (từ **30 ngày đến 90 ngày** hoặc theo học kỳ).\n\n---\n\n📌 **Một số lưu ý quan trọng:**\n* **Sách tham khảo đặc biệt (Reference / Course Reserve):** Có thể chỉ được đọc tại chỗ hoặc mượn ngắn hạn (theo giờ / qua đêm).\n* **Gia hạn sách:** Bạn có thể gia hạn thời gian mượn sách trước khi hết hạn nếu sách chưa có lượt đặt chỗ (`Hold`) từ thành viên khác.\n* **Trả sách đúng hạn:** Hãy trả hoặc gia hạn sách trước hạn để tránh phí phạt quá hạn.\n\nNếu bạn cần tra cứu thời hạn mượn hoặc gia hạn cho một cuốn sách cụ thể đang giữ, bạn có thể cung cấp **Mã thành viên** và **Mã sách** để mình kiểm tra trực tiếp giúp bạn nhé!",
+    "latency_ms": 7330.7
   },
   {
     "step": 1,
-    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "query": "Tìm vị trí của cuốn sách Python Căn Bản và cho biết tình trạng hiện tại.",
     "action_type": "TOOL_EXECUTION",
-    "tool_name": "academic_query",
+    "tool_name": "lookup_book",
     "arguments": {
-      "student_id": "SV2026001"
+      "query": "Python Căn Bản"
     },
-    "observation": {},
-    "latency_ms": 799.12
+    "observation": {
+      "status": "SUCCESS",
+      "query": "Python Căn Bản",
+      "data": [
+        {
+          "book_id": "BK1001",
+          "title": "Python Căn Bản",
+          "author": "Nguyễn Văn A",
+          "category": "Lập trình",
+          "location": "Tầng 1 - Kệ A101",
+          "shelf": "A101",
+          "status": "available",
+          "total_copies": 3,
+          "available_copies": 3,
+          "borrowers": [],
+          "borrower_id": null,
+          "due_date": null,
+          "renewals_used": 0
+        }
+      ],
+      "message": "Tìm thấy 1 sách phù hợp với 'Python Căn Bản'."
+    },
+    "latency_ms": 1962.43
   },
   {
     "step": 2,
-    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "query": "Tìm vị trí của cuốn sách Python Căn Bản và cho biết tình trạng hiện tại.",
     "action_type": "FINAL_ANSWER",
     "thought": "Tổng hợp kết quả từ MCP Server thành công.",
-    "output": "Chưa thể trả lời chi tiết do chưa nhận được dữ liệu từ MCP Server (hãy hoàn thành TODO 2.1).",
+    "output": "Tìm thấy 1 sách phù hợp: BK1001 - Python Căn Bản (Tầng 1 - Kệ A101).",
+    "latency_ms": 10.0
+  },
+  {
+    "step": 1,
+    "query": "Tôi muốn mượn sách Thiết Kế CSDL bằng thẻ thành viên MEM001.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "lookup_book",
+    "arguments": {
+      "query": "Thiết Kế CSDL"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "query": "Thiết Kế CSDL",
+      "data": [
+        {
+          "book_id": "BK1002",
+          "title": "Thiết Kế CSDL",
+          "author": "Trần Thị B",
+          "category": "Cơ sở dữ liệu",
+          "location": "Tầng 2 - Kệ B204",
+          "shelf": "B204",
+          "status": "borrowed",
+          "total_copies": 2,
+          "available_copies": 1,
+          "borrowers": [
+            {
+              "member_id": "MEM001",
+              "due_date": "2026-09-18",
+              "renewals_used": 1
+            }
+          ],
+          "borrower_id": "MEM001",
+          "due_date": "2026-09-18",
+          "renewals_used": 1
+        }
+      ],
+      "message": "Tìm thấy 1 sách phù hợp với 'Thiết Kế CSDL'."
+    },
+    "latency_ms": 1848.69
+  },
+  {
+    "step": 2,
+    "query": "Tôi muốn mượn sách Thiết Kế CSDL bằng thẻ thành viên MEM001.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
+    "output": "Tìm thấy 1 sách phù hợp: BK1002 - Thiết Kế CSDL (Tầng 2 - Kệ B204).",
+    "latency_ms": 10.0
+  },
+  {
+    "step": 1,
+    "query": "Cho tôi biết vị trí của sách BK1001, rồi nếu sách đang được mượn thì gia hạn cho thành viên MEM001 thêm 7 ngày.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "lookup_book",
+    "arguments": {
+      "query": "BK1001"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "query": "BK1001",
+      "data": {
+        "book_id": "BK1001",
+        "title": "Python Căn Bản",
+        "author": "Nguyễn Văn A",
+        "category": "Lập trình",
+        "location": "Tầng 1 - Kệ A101",
+        "shelf": "A101",
+        "status": "available",
+        "total_copies": 3,
+        "available_copies": 3,
+        "borrowers": [],
+        "borrower_id": null,
+        "due_date": null,
+        "renewals_used": 0
+      },
+      "message": "Đã tìm thấy sách Python Căn Bản tại Tầng 1 - Kệ A101."
+    },
+    "latency_ms": 3050.69
+  },
+  {
+    "step": 2,
+    "query": "Cho tôi biết vị trí của sách BK1001, rồi nếu sách đang được mượn thì gia hạn cho thành viên MEM001 thêm 7 ngày.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
+    "output": "Sách Python Căn Bản (BK1001) đang ở Tầng 1 - Kệ A101. Tình trạng: available, còn 3 bản có sẵn, người đang giữ: chưa có.",
+    "latency_ms": 10.0
+  },
+  {
+    "step": 1,
+    "query": "Tìm thông tin sách BK9999.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "lookup_book",
+    "arguments": {
+      "query": "BK9999"
+    },
+    "observation": {
+      "status": "NOT_FOUND",
+      "message": "Không tìm thấy sách phù hợp với 'BK9999'."
+    },
+    "latency_ms": 2046.19
+  },
+  {
+    "step": 2,
+    "query": "Tìm thông tin sách BK9999.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
+    "output": "Không tìm thấy sách phù hợp với 'BK9999'.",
     "latency_ms": 10.0
   }
 ]

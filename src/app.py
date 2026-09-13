@@ -7,6 +7,7 @@ import json
 import os
 import sys
 import time
+from flask import Flask, render_template, request
 from dotenv import load_dotenv
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -26,6 +27,42 @@ from prompts import (
 from providers import get_llm_provider
 
 load_dotenv()
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+app = Flask(__name__, template_folder=os.path.join(BASE_DIR, "templates"), static_folder=os.path.join(BASE_DIR, "static"))
+provider = get_llm_provider()
+mcp_server = MCPAcademicServer()
+
+
+@app.route("/", methods=["GET", "POST"])
+def web_index():
+    """Simple browser UI for the library assistant."""
+    query = ""
+    answer = ""
+    logs = []
+
+    if request.method == "POST":
+        query = (request.form.get("query") or "").strip()
+        if query:
+            logs = run_react_agent(query, provider, mcp_server)
+            save_waterfall_trace(logs)
+            answer = logs[-1]["output"] if logs else ""
+
+    sample_queries = [
+        "Tìm vị trí của cuốn sách BK1001 và cho biết tình trạng hiện tại.",
+        "Tôi muốn mượn sách BK1002 bằng thẻ thành viên MEM001.",
+        "Tôi muốn trả sách BK1002 cho thành viên MEM001.",
+        "Gia hạn BK1002 cho MEM001 thêm 7 ngày."
+    ]
+
+    return render_template(
+        "index.html",
+        query=query,
+        answer=answer,
+        logs=logs,
+        sample_queries=sample_queries,
+    )
+
 
 def load_test_cases():
     """Tải danh sách 5 test cases từ config/test_cases.json hoặc config/test_cases.example.json"""
@@ -119,19 +156,34 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
                 
                 # Tổng hợp Final Answer từ kết quả Observation thực tế
                 if obs_data.get("status") == "SUCCESS":
-                    if "data" in obs_data:
+                    if isinstance(obs_data.get("data"), list):
+                        items = obs_data["data"]
+                        snippets = []
+                        for item in items:
+                            snippets.append(
+                                f"{item.get('book_id', '')} - {item.get('title', '')} ({item.get('location', '')})"
+                            )
+                        final_answer = f"Tìm thấy {len(items)} sách phù hợp: {'; '.join(snippets)}."
+                    elif isinstance(obs_data.get("data"), dict):
                         d = obs_data["data"]
-                        final_answer = (
-                            f"Kết quả tra cứu cho sinh viên {obs_data.get('student_id', '')} ({d.get('full_name', '')}): "
-                            f"Lớp {d.get('class', '')}, GPA: {d.get('gpa', '')}, Email: {d.get('email', '')}, "
-                            f"Trạng thái: {d.get('status', '')}, Cố vấn: {d.get('advisor', '')}."
-                        )
+                        if "title" in d:
+                            borrower_ids = d.get("borrower_ids") or []
+                            borrower_text = ", ".join(borrower_ids) if borrower_ids else "chưa có"
+                            if len(borrower_ids) > 1:
+                                borrower_text = f"{len(borrower_ids)} thành viên ({', '.join(borrower_ids)})"
+                            final_answer = (
+                                f"Sách {d.get('title', '')} ({d.get('book_id', '')}) đang ở {d.get('location', '')}. "
+                                f"Tình trạng: {d.get('status', '')}, còn {d.get('available_copies', 0)} bản có sẵn, "
+                                f"người đang giữ: {borrower_text}."
+                            )
+                        else:
+                            final_answer = obs_data.get("message", json.dumps(obs_data, ensure_ascii=False))
                     elif "message" in obs_data:
                         final_answer = obs_data["message"]
                     else:
                         final_answer = f"Đã hoàn tất xử lý qua MCP Server: {json.dumps(obs_data, ensure_ascii=False)}"
-                elif obs_data.get("status") == "NOT_FOUND":
-                    final_answer = obs_data.get("message", "Không tìm thấy thông tin sinh viên yêu cầu.")
+                elif obs_data.get("status") in {"NOT_FOUND", "UNAVAILABLE", "INVALID_MEMBER", "ALREADY_RETURNED", "INVALID_ARGUMENT"}:
+                    final_answer = obs_data.get("message", "Không thể xử lý yêu cầu với dữ liệu hiện có.")
                 else:
                     final_answer = f"Phản hồi từ công cụ: {json.dumps(obs_data, ensure_ascii=False)}"
             
@@ -163,12 +215,17 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
 
 
 if __name__ == "__main__":
+    if "--web" in sys.argv:
+        print("==========================================================")
+        print("🌐 KHỞI ĐỘNG WEB UI CHO LIBRARY AGENT")
+        print("==========================================================")
+        print("🧭 Mở trình duyệt tại http://127.0.0.1:3000")
+        app.run(host="0.0.0.0", port=3000, debug=True)
+        raise SystemExit
+
     print("==========================================================")
     print("🏫 VINUNI AI COURSE - DAY 03 LAB: CHATBOT VS REACT AGENT")
     print("==========================================================")
-    
-    provider = get_llm_provider()
-    mcp_server = MCPAcademicServer()
     
     print(f"🔌 LLM Provider: {provider.__class__.__name__}")
     print(f"🌐 MCP Server: {mcp_server.server_name}\n")
@@ -179,13 +236,13 @@ if __name__ == "__main__":
     if "--interactive" in sys.argv:
         print("🎮 [INTERACTIVE MODE] Trò chuyện trực tiếp với ReAct Agent:")
         print("💡 Gợi ý câu hỏi thử nghiệm:")
-        print("   - Câu hỏi chung: 'Quy chế học vụ VinUni yêu cầu bao nhiêu tín chỉ?'")
-        print("   - Tra cứu học vụ: 'Hãy tra cứu thông tin học vụ của sinh viên SV2026001'")
-        print("   - Đặt lịch hẹn: 'Đặt lịch hẹn tư vấn cho SV2026001 vào 14:00 ngày 15/09/2026'")
+        print("   - Câu hỏi chung: 'Mượn sách tối đa bao nhiêu ngày?' ")
+        print("   - Tra cứu sách: 'Tìm vị trí của cuốn sách BK1001 và cho biết tình trạng hiện tại.'")
+        print("   - Mượn sách: 'Tôi muốn mượn sách BK1002 bằng thẻ thành viên MEM001.'")
         print("   - Gõ 'exit' hoặc 'quit' để kết thúc phiên trò chuyện.\n")
         while True:
             try:
-                user_input = input("👤 Sinh viên hỏi: ").strip()
+                user_input = input("👤 Người dùng hỏi: ").strip()
                 if not user_input or user_input.lower() in ["exit", "quit"]:
                     print("👋 Tạm biệt! Kết thúc phiên trò chuyện.")
                     break
@@ -223,11 +280,12 @@ if __name__ == "__main__":
     else:
         # Chế độ mặc định khi chỉ gõ 'python src/app.py'
         print("ℹ️ HƯỚNG DẪN SỬ DỤNG CHƯƠNG TRÌNH:")
-        print("  1. Chat trực tiếp liên tục:   python src/app.py --interactive")
-        print("  2. Chạy toàn bộ Test Cases:    python src/app.py --all\n")
+        print("  1. Mở Web UI:                 python src/app.py --web")
+        print("  2. Chat trực tiếp liên tục:    python src/app.py --interactive")
+        print("  3. Chạy toàn bộ Test Cases:   python src/app.py --all\n")
         
         sample_query = tests[1]["question"]
-        print(f"--- 🏁 DEMO CHẠY THỬ 1 TEST CASE MẪU (TC02: Tra cứu học vụ) ---")
+        print(f"--- 🏁 DEMO CHẠY THỬ 1 TEST CASE MẪU (TC02: Tra cứu sách) ---")
         logs = run_react_agent(sample_query, provider, mcp_server)
         save_waterfall_trace(logs)
-        print("\n💡 Hãy thử ngay lệnh: python src/app.py --interactive để chat trực tiếp!")
+        print("\n💡 Hãy thử ngay lệnh: python src/app.py --interactive hoặc python src/app.py --web")

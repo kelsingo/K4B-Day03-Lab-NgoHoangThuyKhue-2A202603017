@@ -36,35 +36,64 @@ class MockOfflineProvider(BaseLLMProvider):
 
     def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
         prompt_lower = prompt.lower()
-        
-        # Mô phỏng nhận diện intent gọi Tool
-        if "sv2026001" in prompt_lower and "đặt lịch" in prompt_lower:
+
+        if "mượn" in prompt_lower and "bk" in prompt_lower:
+            book_id = next((token.upper() for token in prompt_lower.split() if token.startswith("bk")), "BK1001")
+            member_id = "MEM001"
+            if "mem" in prompt_lower:
+                member_id = next((token.upper() for token in prompt_lower.split() if token.startswith("mem")), member_id)
             return {
                 "type": "tool_call",
-                "tool_name": "schedule_appointment",
-                "arguments": {"student_id": "SV2026001", "datetime_str": "14:00 15/09/2026", "advisor_name": "PGS.TS Nguyễn Văn A"},
-                "thought": "Người dùng yêu cầu đặt lịch hẹn tư vấn cho sinh viên SV2026001. Tôi sẽ gọi tool schedule_appointment."
+                "tool_name": "borrow_book",
+                "arguments": {"book_id": book_id, "member_id": member_id},
+                "thought": f"Người dùng muốn mượn sách {book_id} cho thành viên {member_id}. Tôi sẽ gọi tool borrow_book."
             }
-        elif "sv2026001" in prompt_lower or "tra cứu" in prompt_lower:
+
+        if "trả" in prompt_lower and "bk" in prompt_lower:
+            book_id = next((token.upper() for token in prompt_lower.split() if token.startswith("bk")), "BK1001")
+            member_id = "MEM001"
+            if "mem" in prompt_lower:
+                member_id = next((token.upper() for token in prompt_lower.split() if token.startswith("mem")), member_id)
             return {
                 "type": "tool_call",
-                "tool_name": "academic_query",
-                "arguments": {"student_id": "SV2026001"},
-                "thought": "Người dùng muốn tra cứu thông tin học vụ của sinh viên SV2026001. Tôi sẽ gọi tool academic_query."
+                "tool_name": "return_book",
+                "arguments": {"book_id": book_id, "member_id": member_id},
+                "thought": f"Người dùng muốn trả sách {book_id} của thành viên {member_id}. Tôi sẽ gọi tool return_book."
             }
-        else:
+
+        if "gia hạn" in prompt_lower and "bk" in prompt_lower:
+            book_id = next((token.upper() for token in prompt_lower.split() if token.startswith("bk")), "BK1001")
+            member_id = "MEM001"
+            if "mem" in prompt_lower:
+                member_id = next((token.upper() for token in prompt_lower.split() if token.startswith("mem")), member_id)
             return {
-                "type": "text",
-                "content": f"[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-                "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool."
+                "type": "tool_call",
+                "tool_name": "renew_book",
+                "arguments": {"book_id": book_id, "member_id": member_id, "days": 7},
+                "thought": f"Người dùng muốn gia hạn sách {book_id} cho thành viên {member_id}. Tôi sẽ gọi tool renew_book."
             }
+
+        if "bk" in prompt_lower or "tìm" in prompt_lower or "vị trí" in prompt_lower or "tra cứu" in prompt_lower:
+            query = next((token.upper() for token in prompt_lower.split() if token.startswith("bk")), "Python căn bản")
+            return {
+                "type": "tool_call",
+                "tool_name": "lookup_book",
+                "arguments": {"query": query},
+                "thought": f"Người dùng cần tra cứu sách hoặc vị trí của {query}. Tôi sẽ gọi tool lookup_book."
+            }
+
+        return {
+            "type": "text",
+            "content": "[Mock Agent Response]: Tôi có thể hỗ trợ bạn tra cứu vị trí sách, kiểm tra tình trạng mượn/trả và gia hạn tài liệu trong thư viện.",
+            "thought": "Câu hỏi chung về thư viện, trả lời trực tiếp không cần gọi Tool."
+        }
 
 
 class GeminiProvider(BaseLLMProvider):
     """Google Gemini Provider (Native Tool Calling với Google GenAI SDK)"""
     def __init__(self, api_key: str = None, model: str = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        self.model_name = model or os.getenv("LLM_MODEL") or "gemini-2.5-flash"
+        self.model_name = model or os.getenv("LLM_MODEL") or "gemini-3.6-flash"
 
     def generate(self, prompt: str, system_prompt: str = "") -> str:
         if not self.api_key or self.api_key == "your_gemini_api_key_here":
