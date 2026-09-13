@@ -33,5 +33,12 @@
     "question": "Tìm thông tin sách BK9999.",
     "expected_behavior": "Agent nhận kết quả NOT_FOUND từ Tool và trả lời rõ ràng rằng sách không tồn tại trong mock database.",
     "complexity": "Medium"
+  },
+  {
+    "id": "TC06",
+    "type": "multi_step_reasoning",
+    "question": "Tôi muốn mượn sách BK1002 bằng thẻ thành viên MEM001.",
+    "expected_behavior": "Agent nhận kết quả NOT_FOUND từ Tool và trả lời rõ ràng rằng sách không tồn tại trong mock database.",
+    "complexity": "Medium"
   }
 ]
