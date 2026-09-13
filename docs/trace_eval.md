@@ -28,20 +28,49 @@ Dán 1 đoạn trích xuất log tiêu biểu từ file `docs/trace_waterfall.js
 [
   {
     "step": 1,
+    "query": "Tôi muốn mượn sách Thiết Kế CSDL bằng thẻ thành viên MEM001.",
     "action_type": "TOOL_EXECUTION",
-    "tool_name": "academic_query",
+    "tool_name": "lookup_book",
     "arguments": {
-      "student_id": "SV2026001"
+      "query": "Thiết Kế CSDL"
     },
     "observation": {
       "status": "SUCCESS",
-      "student_id": "SV2026001",
-      "data": {
-        "full_name": "Nguyễn Văn An",
-        "gpa": 3.85
-      }
+      "query": "Thiết Kế CSDL",
+      "data": [
+        {
+          "book_id": "BK1002",
+          "title": "Thiết Kế CSDL",
+          "author": "Trần Thị B",
+          "category": "Cơ sở dữ liệu",
+          "location": "Tầng 2 - Kệ B204",
+          "shelf": "B204",
+          "status": "borrowed",
+          "total_copies": 2,
+          "available_copies": 1,
+          "borrowers": [
+            {
+              "member_id": "MEM001",
+              "due_date": "2026-09-18",
+              "renewals_used": 1
+            }
+          ],
+          "borrower_id": "MEM001",
+          "due_date": "2026-09-18",
+          "renewals_used": 1
+        }
+      ],
+      "message": "Tìm thấy 1 sách phù hợp với 'Thiết Kế CSDL'."
     },
-    "latency_ms": 120.5
+    "latency_ms": 1848.69
+  },
+  {
+    "step": 2,
+    "query": "Tôi muốn mượn sách Thiết Kế CSDL bằng thẻ thành viên MEM001.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
+    "output": "Tìm thấy 1 sách phù hợp: BK1002 - Thiết Kế CSDL (Tầng 2 - Kệ B204).",
+    "latency_ms": 10.0
   }
 ]
 ```
